@@ -1,5 +1,7 @@
 package net.dvd.experium;
 
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -85,6 +87,8 @@ boolean isOreGen = false;
     {
 		if(this.providePower == true){
 			
+			//entityplayer.addChatMessage("Powering Touching Furnaces");
+			
 		if(par1World.getBlockId(x-1, y, z) == Block.furnaceIdle.blockID){
 			par1World.setBlock(x-1, y, z, Block.furnaceBurning.blockID);
 			int l = par1World.getBlockMetadata(x-1, y, z);
@@ -140,4 +144,16 @@ boolean isOreGen = false;
 		return false;
     }
 	
+	public int idDropped(int par1, Random par2Random, int par3){
+		if(isOreGen==true){
+		return XeperiumMain.xperiumCrushed.itemID ;
+		} else { return 0;}
+	}
+	
+	public int quanityDropped(){
+		if(isOreGen == true){
+		return 1;
+		} else {return 0;}
+		
+	}
 }

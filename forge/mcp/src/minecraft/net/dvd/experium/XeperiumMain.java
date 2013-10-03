@@ -3,9 +3,12 @@ package net.dvd.experium;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.EnumToolMaterial;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
+import net.minecraftforge.common.EnumHelper;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -15,11 +18,12 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 	
 
-@Mod(modid="XPM", name="Xperium", version="0.0.1")
+@Mod(modid="XPM", name="Xperium", version="0.0.2 Alpha")
 @NetworkMod(clientSideRequired=true)
 public class XeperiumMain {
 	
@@ -29,15 +33,29 @@ public class XeperiumMain {
              return new ItemStack(xperiumOre, 1, 0);
      }
 };
+
+
 	
-	public final static Block xperiumOre = new xperiumBase(500, Material.ground,false, true)
-    .setHardness(0.5F)
+	@Instance("XPM")
+	public static XeperiumMain instance;
+
+
+
+
+	public final static Block xperiumOre = new xperiumBase(500, Material.rock,false, true)
+    .setHardness(4.0F)
     .setStepSound(Block.soundStoneFootstep)
     .setUnlocalizedName("xperiumOre")
     .setCreativeTab(XperiumTab)
     .setTextureName("xperium:xperiumOre");
 	
-	public final static Block xperiumBlock = new xperiumBase(501, Material.ground,true, false)
+	public final static Block xperiumBench = new xperiumBaseGUI(502, Material.wood)
+    .setStepSound(Block.soundStoneFootstep)
+    .setUnlocalizedName("xperiumBench")
+    .setCreativeTab(XperiumTab)
+    .setTextureName("xperium:xperiumBench");
+	
+	public final static Block xperiumBlock = new xperiumBase(501, Material.anvil,true, false)
     .setHardness(0.5F)
     .setStepSound(Block.soundStoneFootstep)
     .setUnlocalizedName("xperiumBlock")
@@ -45,6 +63,14 @@ public class XeperiumMain {
     .setTextureName("xperium:xperiumBlock")
     .setLightValue(1f)
     .setLightOpacity(0);
+
+	
+	
+	public final static Item xperiumPick = new XperiumPickBase(5003,  EnumToolMaterial.EMERALD)
+	.setCreativeTab(XperiumTab)
+	.setTextureName("xperium:XPick");
+	
+
 	
 	public final static Item xperiumCrushed = new XperiumItemBase(5000)
 	.setMaxStackSize(3)
@@ -67,8 +93,7 @@ public class XeperiumMain {
 	.setTextureName("xperium:Singot")
 	.setMaxStackSize(64);
 	
-	@Instance(value = "XPM")
-    public static XeperiumMain instance;
+	
     
     // Says where the client and server 'proxy' code is loaded.
     @SidedProxy(clientSide="net.dvd.experium.client.ClientProxy", serverSide="net.dvd.experium.CommonProxy")
@@ -84,6 +109,14 @@ public class XeperiumMain {
     //@Init       // used in 1.5.2
     public void load(FMLInitializationEvent event) {
             proxy.registerRenderers();
+            
+            
+            
+            //Xperium Ore Gen
+            GameRegistry.registerWorldGenerator(new XperiumBaseWorldGenerator(xperiumOre.blockID));
+            
+            
+            
             //Xperium Ore
             GameRegistry.registerBlock(xperiumOre, "xperiumOre");
             MinecraftForge.setBlockHarvestLevel(xperiumOre, "pickaxe", 2);
@@ -96,6 +129,13 @@ public class XeperiumMain {
             GameRegistry.addRecipe(new ItemStack(xperiumBlock , 2), "xxx", "xxx", "xxx",
                     'x', solidXperiumIngot);
             
+          //Xperium Bench
+            GameRegistry.registerBlock(xperiumBench, ItemBlock.class , "xperiumBench");
+            MinecraftForge.setBlockHarvestLevel(xperiumBench, "pickaxe", 0);
+            LanguageRegistry.addName(xperiumBench, "Xperium Bench");
+            GameRegistry.registerTileEntity(xperiumTileEntityBase.class, "xperiumBenchTileEntity");
+          
+            
             //Impure Crushed Xperium Ingot
             GameRegistry.registerItem(xperiumCrushed, "crushedXP");
             LanguageRegistry.addName(xperiumCrushed, "Impure Crushed Xperium Ore");
@@ -105,11 +145,20 @@ public class XeperiumMain {
             GameRegistry.registerItem(xperiumIngot, "XPingot");
             LanguageRegistry.addName(xperiumIngot, "Crushed Xperium Ore");
             
+          //Xperium Pick
+            GameRegistry.registerItem(xperiumPick, "XPick");
+            LanguageRegistry.addName(xperiumPick, "Xperium Pick");
+            ItemStack XPIngotStack = new ItemStack(solidXperiumIngot);
+            ItemStack StickStack = new ItemStack(Item.stick);
+            GameRegistry.addRecipe(new ItemStack(xperiumPick), "xxx", " y ", " y ", 
+                    'x', XPIngotStack, 'y', StickStack);
+            
           //Xperium Ingot
             GameRegistry.registerItem(solidXperiumIngot, "SolidXPingot");
             LanguageRegistry.addName(solidXperiumIngot, "Solid Pure Xperium Ingot");
             GameRegistry.addRecipe(new ItemStack(solidXperiumIngot), "xxx", "xxx", "xxx",
                     'x', xperiumIngot);
+            GameRegistry.addShapelessRecipe(new ItemStack(solidXperiumIngot), new ItemStack(xperiumBlock) );
             
             LanguageRegistry.instance().addStringLocalization("itemGroup.xperiumTab", "en_US", "Xperium");
     }
